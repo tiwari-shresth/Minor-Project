@@ -16,13 +16,13 @@ The `attendance-data` Docker volume preserves SQLite attendance records, embeddi
 
 ## Security and privacy
 
-All routes except `/api/health` require HTTP Basic authentication. `ADMIN_USERNAME` and `ADMIN_PASSWORD` grant full access. `FACULTY_USERNAME` and `FACULTY_PASSWORD` grant access only to the live recognition kiosk; the server rejects their requests to student management, attendance history, exports, settings, and SQL tools. Keep all credentials private and use HTTPS. Face photos and embeddings are sensitive biometric data: register people only with appropriate notice/consent, restrict access, define retention and deletion procedures, and protect backups.
+The `/login` page signs in Admin and Faculty accounts using `ADMIN_USERNAME`/`ADMIN_PASSWORD` and `FACULTY_USERNAME`/`FACULTY_PASSWORD`. Sessions use an HTTP-only signed cookie and expire after eight hours; the dashboard has a Log out button. Set `SESSION_SECRET` to a long random value in hosted environments. Faculty accounts can only use the attendance kiosk; the server rejects access to student management, attendance history, exports, settings, and SQL tools. Keep credentials private and use HTTPS. Face photos and embeddings are sensitive biometric data: register people only with appropriate notice/consent, restrict access, define retention and deletion procedures, and protect backups.
 
 The system does not perform liveness checks and has not been validated for demographic accuracy or classroom conditions. It should be treated as a demonstration project until those risks are evaluated.
 
 ## Local development
 
-Create a Python environment, install `requirements.txt`, set the admin and faculty credentials (`ADMIN_USERNAME`, `ADMIN_PASSWORD`, `FACULTY_USERNAME`, and `FACULTY_PASSWORD`); set `ENABLE_FACE_RECOGNITION=true` to load the model, then run:
+Create a Python environment, install `requirements.txt`, set the admin and faculty credentials (`ADMIN_USERNAME`, `ADMIN_PASSWORD`, `FACULTY_USERNAME`, and `FACULTY_PASSWORD`) plus `SESSION_SECRET`; set `ENABLE_FACE_RECOGNITION=true` to load the model, then run:
 
 ```sh
 uvicorn web_app:app --host 127.0.0.1 --port 8000

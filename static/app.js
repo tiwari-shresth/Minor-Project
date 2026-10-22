@@ -41,7 +41,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Could not determine signed-in role:', error);
     }
 
+    try {
+        const healthResponse = await fetch('/api/health');
+        const health = await healthResponse.json();
+        const modelStatus = document.getElementById('model-status-sub');
+        const statusDot = document.querySelector('.status-indicator-dot');
+        if (modelStatus) modelStatus.textContent = health.face_recognition === 'enabled'
+            ? `${health.model_name || 'Face'} model ready`
+            : 'Face model unavailable';
+        if (statusDot) statusDot.classList.toggle('online', health.face_recognition === 'enabled');
+    } catch (error) {
+        console.error('Could not determine face model status:', error);
+    }
+
     document.body.dataset.role = currentUserRole;
+    const roleLabel = document.getElementById('signed-in-role');
+    if (roleLabel) roleLabel.textContent = `Signed in as ${currentUserRole}`;
     if (currentUserRole === 'faculty') {
         document.getElementById('page-title').textContent = 'Faculty Attendance Kiosk';
         document.getElementById('page-subtitle').textContent = 'Students can mark attendance here; administration tools are restricted.';
@@ -70,6 +85,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const btnTriggerEmail = document.getElementById('btn-trigger-email-report');
     if (btnTriggerEmail && currentUserRole === 'admin') btnTriggerEmail.addEventListener('click', triggerQuickEmailReport);
+
+    const logoutButton = document.getElementById('btn-logout');
+    if (logoutButton) logoutButton.addEventListener('click', async () => {
+        try {
+            await fetch('/api/logout', { method: 'POST' });
+        } finally {
+            window.location.replace('/login');
+        }
+    });
 
     // Initial check for camera availability
     startMainCamera();

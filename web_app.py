@@ -14,6 +14,8 @@ import traceback
 import asyncio
 import base64
 import hmac
+import secrets
+import time
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -27,7 +29,7 @@ import pandas as pd
 from scipy.spatial.distance import cosine
 from insightface.app import FaceAnalysis
 from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, File, Form, Request
-from fastapi.responses import JSONResponse, FileResponse, Response
+from fastapi.responses import JSONResponse, FileResponse, Response, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.responses import Response as StarletteResponse
@@ -67,49 +69,50 @@ app = FastAPI(
     version="2.0.0"
 )
 
+SESSION_SECRET = os.environ.get("SESSION_SECRET", "")
+if not SESSION_SECRET:
+    SESSION_SECRET = secrets.token_urlsafe(48)
+    logger.warning("SESSION_SECRET is not set; sessions will be invalidated when the server restarts.")
+SESSION_COOKIE = "attendance_session"
+SESSION_TTL_SECONDS = 8 * 60 * 60
+
+
+def make_session(role: str, expires_at: int) -> str:
+    payload = f"{role}:{expires_at}"
+    signature = hmac.new(SESSION_SECRET.encode(), payload.encode(), "sha256").hexdigest()
+    return f"{payload}:{signature}"
+
+
+def read_session(value: str) -> Optional[str]:
+    try:
+        role, expiry_text, signature = value.split(":", 2)
+        payload = f"{role}:{expiry_text}"
+        expected = hmac.new(SESSION_SECRET.encode(), payload.encode(), "sha256").hexdigest()
+        if role not in {"admin", "faculty"} or int(expiry_text) <= int(time.time()):
+            return None
+        return role if hmac.compare_digest(signature, expected) else None
+    except (ValueError, TypeError):
+        return None
+
+
 @app.middleware("http")
 async def require_role_auth(request, call_next):
-    """Authenticate admins and faculty; enforce faculty's kiosk-only access."""
+    """Use signed sessions and enforce faculty's kiosk-only access."""
     path = request.url.path
-    if path == "/api/health":
+    if path in {"/api/health", "/login", "/api/login"}:
         return await call_next(request)
 
-    admin_username = os.environ.get("ADMIN_USERNAME", "")
-    admin_password = os.environ.get("ADMIN_PASSWORD", "")
-    faculty_username = os.environ.get("FACULTY_USERNAME", "")
-    faculty_password = os.environ.get("FACULTY_PASSWORD", "")
-    if not admin_username or not admin_password:
-        return StarletteResponse("Admin credentials are not configured.", status_code=503)
-
-    auth = request.headers.get("authorization", "")
-    try:
-        scheme, token = auth.split(" ", 1)
-        supplied_user, supplied_pass = base64.b64decode(token, validate=True).decode("utf-8").split(":", 1)
-    except Exception:
-        scheme, supplied_user, supplied_pass = "", "", ""
-
-    role = None
-    if scheme.lower() == "basic":
-        if (hmac.compare_digest(supplied_user, admin_username)
-                and hmac.compare_digest(supplied_pass, admin_password)):
-            role = "admin"
-        elif (faculty_username and faculty_password
-                and hmac.compare_digest(supplied_user, faculty_username)
-                and hmac.compare_digest(supplied_pass, faculty_password)):
-            role = "faculty"
-
+    role = read_session(request.cookies.get(SESSION_COOKIE, ""))
     if role is None:
-        return StarletteResponse(
-            "Authentication required.", status_code=401,
-            headers={"WWW-Authenticate": 'Basic realm="Attendance System", charset="UTF-8"'},
-        )
+        if path.startswith("/api/"):
+            return JSONResponse({"detail": "Please sign in to continue."}, status_code=401)
+        return RedirectResponse(url="/login", status_code=303)
 
     request.state.user_role = role
     if role == "faculty":
         allowed = (
             path == "/"
-            or path == "/api/me"
-            or path == "/api/recognize_frame"
+            or path in {"/api/me", "/api/logout", "/api/recognize_frame"}
             or path.startswith("/static/")
         )
         if not allowed:
@@ -236,9 +239,10 @@ async def startup_event():
         return
     logger.info("Initializing InsightFace engine...")
     try:
-        face_app = FaceAnalysis(providers=['CPUExecutionProvider'])
+        model_name = os.environ.get("FACE_MODEL_NAME", "buffalo_l")
+        face_app = FaceAnalysis(name=model_name, providers=['CPUExecutionProvider'])
         face_app.prepare(ctx_id=0, det_size=(160, 160))
-        logger.info("InsightFace ready.")
+        logger.info("InsightFace model '%s' ready.", model_name)
     except Exception as e:
         logger.error(f"Failed to initialize InsightFace: {e}\n{traceback.format_exc()}")
 
@@ -271,6 +275,10 @@ class SQLQueryRequest(BaseModel):
 class TestEmailRequest(BaseModel):
     recipient: str
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
 def decode_base64_image(b64_str: str) -> np.ndarray:
     if "," in b64_str:
         b64_str = b64_str.split(",", 1)[1]
@@ -281,11 +289,54 @@ def decode_base64_image(b64_str: str) -> np.ndarray:
 
 # Endpoints
 
+@app.get("/login")
+def login_page():
+    login_file = os.path.join(STATIC_DIR, "login.html")
+    if not os.path.exists(login_file):
+        return JSONResponse({"detail": "Login page is not installed."}, status_code=404)
+    return FileResponse(login_file)
+
+@app.post("/api/login")
+def login(payload: LoginRequest, request: Request, response: Response):
+    admin_username = os.environ.get("ADMIN_USERNAME", "")
+    admin_password = os.environ.get("ADMIN_PASSWORD", "")
+    faculty_username = os.environ.get("FACULTY_USERNAME", "")
+    faculty_password = os.environ.get("FACULTY_PASSWORD", "")
+    role = None
+    if (admin_username and admin_password
+            and hmac.compare_digest(payload.username, admin_username)
+            and hmac.compare_digest(payload.password, admin_password)):
+        role = "admin"
+    elif (faculty_username and faculty_password
+            and hmac.compare_digest(payload.username, faculty_username)
+            and hmac.compare_digest(payload.password, faculty_password)):
+        role = "faculty"
+    if role is None:
+        raise HTTPException(status_code=401, detail="Username or password is incorrect.")
+
+    expires_at = int(time.time()) + SESSION_TTL_SECONDS
+    response.set_cookie(
+        key=SESSION_COOKIE,
+        value=make_session(role, expires_at),
+        max_age=SESSION_TTL_SECONDS,
+        httponly=True,
+        secure=request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https",
+        samesite="lax",
+        path="/",
+    )
+    return {"success": True, "role": role}
+
+@app.post("/api/logout")
+def logout(response: Response):
+    response.delete_cookie(key=SESSION_COOKIE, path="/", httponly=True, samesite="lax")
+    return {"success": True}
+
 @app.get("/api/health")
 def health_check():
     return {
         "status": "online",
         "face_recognition": "enabled" if face_app is not None else "disabled",
+        "model_name": os.environ.get("FACE_MODEL_NAME", "buffalo_l") if face_app is not None else None,
     }
 
 @app.get("/api/me")

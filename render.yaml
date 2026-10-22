@@ -12,7 +12,11 @@ services:
       - key: HOME
         value: /data/home
       - key: ENABLE_FACE_RECOGNITION
-        value: "false"
+        value: "true"
+      - key: FACE_MODEL_NAME
+        value: buffalo_sc
+      - key: SESSION_SECRET
+        generateValue: true
       - key: ADMIN_USERNAME
         sync: false
       - key: ADMIN_PASSWORD

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1020">
+    <title>Sign in · VisionMark</title>
+    <style>
+        :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #0b1020; color: #edf2ff; }
+        * { box-sizing: border-box; }
+        body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; background: radial-gradient(ellipse at 50% 0%, #1d2d55 0, #0b1020 58%); }
+        main { width: min(100%, 420px); padding: 36px; border: 1px solid #2b3651; border-radius: 22px; background: rgba(17, 25, 45, .94); box-shadow: 0 24px 80px #0008; }
+        .brand { display: flex; align-items: center; gap: 13px; margin-bottom: 30px; }
+        .mark { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; background: #2858da; font-size: 22px; }
+        h1 { margin: 0; font-size: 1.45rem; letter-spacing: -.03em; }
+        .tagline { margin: 5px 0 0; color: #9aa8c3; font-size: .88rem; }
+        h2 { margin: 0 0 7px; font-size: 1.15rem; }
+        .hint { margin: 0 0 24px; color: #9aa8c3; font-size: .9rem; line-height: 1.5; }
+        label { display: block; margin: 16px 0 7px; color: #c9d3e8; font-size: .88rem; }
+        input { width: 100%; padding: 12px 13px; border: 1px solid #35425e; border-radius: 10px; outline: none; background: #0b1222; color: #fff; font: inherit; }
+        input:focus { border-color: #6f91ff; box-shadow: 0 0 0 3px #426fff30; }
+        button { width: 100%; margin-top: 23px; padding: 12px; border: 0; border-radius: 10px; background: #3868ef; color: white; font: inherit; font-weight: 650; cursor: pointer; }
+        button:hover { background: #4c78ff; }
+        button:disabled { cursor: wait; opacity: .65; }
+        .error { min-height: 1.3em; margin: 14px 0 0; color: #ff9292; font-size: .88rem; }
+        .footer { margin: 24px 0 0; color: #7786a3; font-size: .78rem; text-align: center; }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="brand"><div class="mark" aria-hidden="true">◉</div><div><h1>VisionMark</h1><p class="tagline">Attendance management</p></div></div>
+        <h2>Sign in to continue</h2>
+        <p class="hint">Use your Admin or Faculty account. Students do not need an account.</p>
+        <form id="login-form">
+            <label for="username">Username</label>
+            <input id="username" name="username" autocomplete="username" required autofocus>
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <button id="submit-button" type="submit">Sign in</button>
+            <p class="error" id="error-message" role="alert" aria-live="polite"></p>
+        </form>
+        <p class="footer">Your role determines which attendance tools you can access.</p>
+    </main>
+    <script>
+        const form = document.getElementById('login-form');
+        const button = document.getElementById('submit-button');
+        const errorMessage = document.getElementById('error-message');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            errorMessage.textContent = '';
+            button.disabled = true;
+            button.textContent = 'Signing in…';
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.detail || 'Sign in failed.');
+                window.location.replace('/');
+            } catch (error) {
+                errorMessage.textContent = error.message || 'Could not sign in. Check your connection and try again.';
+                button.disabled = false;
+                button.textContent = 'Sign in';
+            }
+        });
+    </script>
+</body>
+</html>

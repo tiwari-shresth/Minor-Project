@@ -10,7 +10,9 @@
 
 ## Render free demo
 
-`render.yaml` is configured for Render's free 512 MB web-service plan in Singapore and sets `ENABLE_FACE_RECOGNITION=false`. The dashboard starts without downloading the 326 MB `buffalo_l` pack; model-backed registration and recognition return HTTP 503 in this free demo. Docker Compose enables recognition by default. A paid hosted service must set `ENABLE_FACE_RECOGNITION=true` explicitly. The free service has no persistent disk or database: local SQLite records, student photos, embeddings, and SMTP settings can disappear after a restart, redeploy, or spin-down. Free services sleep after 15 minutes without traffic and can take about a minute to wake. Do not use real student or biometric data on this demo.
+`render.yaml` is configured for Render's free 512 MB web-service plan in Singapore, enables face recognition, and selects the smaller `buffalo_sc` detection-and-recognition model. This pack is about 16 MB; it is smaller than the 326 MB `buffalo_l` pack for lower-memory hosts. It still needs a successful first-time download and runtime initialization, so confirm the Render startup log says the model is ready. Free services have no persistent disk: SQLite records, student photos, embeddings, and SMTP settings can disappear after a restart, redeploy, or spin-down. Free services sleep after 15 minutes without traffic and may take about a minute to wake. Do not use real student or biometric data on this demo.
+
+The login page creates an eight-hour signed session. Set a persistent, randomly generated `SESSION_SECRET` in the host's environment variables. InsightFace's pretrained model packs are restricted to non-commercial research use; review the model license before any other use.
 
 This is a zero-compute-cost preview configuration, not a durable attendance deployment. Render's free plan has included usage limits; check the workspace billing and usage settings so exceeding any included limits cannot create charges. For durable use, move to paid compute and persistent storage, which this zero-cost deployment intentionally does not provision.
 

@@ -66,6 +66,9 @@ body[data-role="faculty"] .activity-feed-header,
 body[data-role="faculty"] #activity-stream {
     display: none !important;
 }
+body[data-role="faculty"] .signed-in-role {
+    display: none;
+}
 
 /* Layout */
 .app-layout {
@@ -271,6 +274,12 @@ body[data-role="faculty"] #activity-stream {
     display: flex;
     align-items: center;
     gap: 12px;
+}
+
+.signed-in-role {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: capitalize;
 }
 
 .clock-display {
