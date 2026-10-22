@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: face-recognition-attendance
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /api/health
+    autoDeployTrigger: off
+    envVars:
+      - key: DATA_DIR
+        value: /data
+      - key: HOME
+        value: /data/home
+      - key: ENABLE_FACE_RECOGNITION
+        value: "false"
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: FACULTY_USERNAME
+        sync: false
+      - key: FACULTY_PASSWORD
+        sync: false
