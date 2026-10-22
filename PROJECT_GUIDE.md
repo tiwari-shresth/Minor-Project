@@ -28,7 +28,9 @@
 ## 4. Login and logout
 
 - Open the [login page](https://minor-project-attendance.onrender.com/login).
-- Enter the Admin or Faculty username and password provided by the project owner.
+- Admin username: `admin`.
+- Faculty username: `faculty`.
+- Passwords are provided privately by the project owner and are intentionally omitted from this public guide.
 - A successful sign-in creates a secure, signed session that lasts up to eight hours.
 - Choose **Log out** in the dashboard to end the session.
 - Keep passwords private. Never put real passwords in this public repository.
