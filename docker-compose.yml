@@ -1,0 +1,25 @@
+services:
+  attendance-web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATA_DIR: /data
+      PORT: 8000
+      ENABLE_FACE_RECOGNITION: ${ENABLE_FACE_RECOGNITION:-true}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:?Set ADMIN_USERNAME in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+      FACULTY_USERNAME: ${FACULTY_USERNAME:?Set FACULTY_USERNAME in .env}
+      FACULTY_PASSWORD: ${FACULTY_PASSWORD:?Set FACULTY_PASSWORD in .env}
+    volumes:
+      - attendance-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 180s
+
+volumes:
+  attendance-data:
