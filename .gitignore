@@ -1,0 +1,14 @@
+.env
+.env.*
+data/
+.venv/
+cloudflared
+attendance.db
+*.sqlite
+*.sqlite3
+encodings.json
+config.json
+debug.log
+known_faces/
+__pycache__/
+*.py[cod]
