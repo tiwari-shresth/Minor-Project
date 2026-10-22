@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionMark AI — Face Recognition Attendance System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 16v1M12 7v1M8 12H7M17 12h-1"></path>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>VisionMark</h1>
+                    <span class="badge-ai">AI Attendance</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="tab-kiosk" id="nav-btn-kiosk">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                    <span>Live Kiosk</span>
+                    <span class="live-dot" title="Active"></span>
+                </button>
+                <button class="nav-item" data-tab="tab-students" id="nav-btn-students">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Student Roster</span>
+                    <span class="count-pill" id="sidebar-student-count">0</span>
+                </button>
+                <button class="nav-item" data-tab="tab-logs" id="nav-btn-logs">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <span>Attendance Records</span>
+                </button>
+                <button class="nav-item" data-tab="tab-settings" id="nav-btn-settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>Email & Settings</span>
+                </button>
+                <button class="nav-item" data-tab="tab-sql" id="nav-btn-sql">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    <span>SQL Console</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="system-status-card">
+                    <div class="status-indicator-dot online"></div>
+                    <div class="status-info">
+                        <span class="status-title">Engine Online</span>
+                        <span class="status-sub" id="model-status-sub">InsightFace CPU</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header Bar -->
+            <header class="top-bar">
+                <div class="page-title-group">
+                    <h2 id="page-title">Live Recognition Kiosk</h2>
+                    <p class="subtitle" id="page-subtitle">Real-time biometric attendance matching & auto-logging</p>
+                </div>
+                <div class="top-actions">
+                    <div class="clock-display" id="clock-display">--:--:--</div>
+                    <button class="btn btn-outline" id="btn-quick-email" title="Send today's attendance report to faculty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <span>Email Report</span>
+                    </button>
+                    <button class="btn btn-primary" id="btn-open-register">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>Register Student</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats Bar -->
+            <section class="metrics-grid">
+                <div class="metric-card glass">
+                    <div class="metric-icon icon-students">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="metric-data">
+                        <span class="metric-label">Registered Students</span>
+                        <h3 class="metric-value" id="stat-total-students">0</h3>
+                    </div>
+                </div>
+                <div class="metric-card glass">
+                    <div class="metric-icon icon-present">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <div class="metric-data">
+                        <span class="metric-label">Present Today</span>
+                        <h3 class="metric-value text-success" id="stat-present-today">0</h3>
+                    </div>
+                </div>
+                <div class="metric-card glass">
+                    <div class="metric-icon icon-absent">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    </div>
+                    <div class="metric-data">
+                        <span class="metric-label">Absent Today</span>
+                        <h3 class="metric-value text-warning" id="stat-absent-today">0</h3>
+                    </div>
+                </div>
+                <div class="metric-card glass">
+                    <div class="metric-icon icon-rate">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                    </div>
+                    <div class="metric-data">
+                        <span class="metric-label">Attendance Rate</span>
+                        <h3 class="metric-value text-accent" id="stat-attendance-rate">0%</h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 1: KIOSK VIEW -->
+            <div class="tab-pane active" id="tab-kiosk">
+                <div class="kiosk-grid">
+                    <!-- Camera Viewport Card -->
+                    <div class="kiosk-card glass">
+                        <div class="card-header">
+                            <div class="header-left">
+                                <span class="camera-status-tag" id="camera-status-tag">
+                                    <span class="pulse-dot"></span> Camera Ready
+                                </span>
+                                <span class="fps-tag" id="fps-counter">0 FPS</span>
+                            </div>
+                            <div class="header-controls">
+                                <button class="btn-icon" id="btn-toggle-cam" title="Pause / Resume Stream">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                </button>
+                                <button class="btn-icon" id="btn-switch-source" title="Switch Video Source">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="viewport-container" id="viewport-container">
+                            <video id="webcam-video" autoplay playsinline muted></video>
+                            <canvas id="overlay-canvas"></canvas>
+                            
+                            <!-- Scanning Laser Animation -->
+                            <div class="scan-laser" id="scan-laser"></div>
+
+                            <!-- Viewport Guides -->
+                            <div class="viewport-hud">
+                                <div class="corner tl"></div>
+                                <div class="corner tr"></div>
+                                <div class="corner bl"></div>
+                                <div class="corner br"></div>
+                                <div class="hud-center-crosshair"></div>
+                            </div>
+
+                            <!-- Camera Start Overlay (if permissions needed) -->
+                            <div class="camera-placeholder" id="camera-placeholder">
+                                <div class="placeholder-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                                </div>
+                                <h4>Camera Inactive</h4>
+                                <p>Click to activate your webcam for live face recognition.</p>
+                                <button class="btn btn-primary" id="btn-start-camera">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    <span>Start Live Camera</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="kiosk-status-strip">
+                            <div class="stream-info">
+                                <span class="label">Detection Threshold:</span>
+                                <span class="val" id="active-threshold-val">0.40</span>
+                            </div>
+                            <div class="stream-info">
+                                <span class="label">Recognition Interval:</span>
+                                <span class="val">250 ms</span>
+                            </div>
+                            <div class="stream-info">
+                                <span class="label">Sound Alerts:</span>
+                                <span class="val text-success">Enabled 🔊</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Recognition Log & Recent Stream Sidebar -->
+                    <div class="live-activity-card glass">
+                        <div class="card-header">
+                            <h3>Live Detections</h3>
+                            <span class="live-pill">Real-time</span>
+                        </div>
+
+                        <!-- Last Recognized Hero Spot -->
+                        <div class="hero-recognition-card" id="hero-recognition-card">
+                            <div class="avatar-spot" id="hero-avatar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </div>
+                            <div class="hero-details">
+                                <span class="hero-badge" id="hero-badge">Waiting for Face</span>
+                                <h4 id="hero-name">No Face in Frame</h4>
+                                <p id="hero-time">Align face inside viewfinder</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-feed-header">
+                            <h4>Recent Check-ins Today</h4>
+                        </div>
+                        <div class="activity-stream" id="activity-stream">
+                            <div class="empty-state-small">No attendance marked yet today.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: STUDENTS ROSTER -->
+            <div class="tab-pane" id="tab-students">
+                <div class="pane-card glass">
+                    <div class="card-header">
+                        <div class="search-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="search-students" placeholder="Search students by name or email...">
+                        </div>
+                        <button class="btn btn-primary" id="btn-add-student-modal">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            <span>Add New Student</span>
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Student Name</th>
+                                    <th>Email Address</th>
+                                    <th>Embeddings</th>
+                                    <th>Today's Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-table-body">
+                                <tr><td colspan="6" class="text-center">Loading students...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: ATTENDANCE LOGS -->
+            <div class="tab-pane" id="tab-logs">
+                <div class="pane-card glass">
+                    <div class="card-header flex-wrap">
+                        <div class="filters-row">
+                            <div class="input-group">
+                                <label for="filter-date">Date:</label>
+                                <input type="date" id="filter-date">
+                            </div>
+                            <div class="input-group">
+                                <label for="filter-student-name">Student:</label>
+                                <input type="text" id="filter-student-name" placeholder="Filter by name...">
+                            </div>
+                            <button class="btn btn-outline" id="btn-clear-filters">Clear</button>
+                        </div>
+                        <div class="export-actions">
+                            <span class="badge-tag" style="background:rgba(16, 185, 129, 0.12);color:var(--success);font-weight:600;">⏱️ 24h Auto-Purge Active</span>
+                            <button class="btn btn-outline" id="btn-purge-old" title="Delete attendance records older than 24 hours">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                <span>Purge &gt;24h</span>
+                            </button>
+                            <button class="btn btn-outline" id="btn-export-csv">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                <span>Export CSV</span>
+                            </button>
+                            <button class="btn btn-primary" id="btn-manual-mark-modal">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                <span>Manual Entry</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Student Name</th>
+                                    <th>Email</th>
+                                    <th>Date</th>
+                                    <th>Check-in Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-table-body">
+                                <tr><td colspan="7" class="text-center">Loading records...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: SETTINGS & EMAIL -->
+            <div class="tab-pane" id="tab-settings">
+                <div class="settings-grid">
+                    <!-- Email Configuration Card -->
+                    <div class="pane-card glass">
+                        <div class="card-header">
+                            <h3>Email & SMTP Configuration</h3>
+                            <span class="badge-tag">Reports</span>
+                        </div>
+                        <form id="settings-form" class="settings-form">
+                            <div class="form-group">
+                                <label for="cfg-sender-email">Sender Email (Gmail)</label>
+                                <input type="email" id="cfg-sender-email" required placeholder="e.g. youraccount@gmail.com">
+                                <small>The Gmail or SMTP account that sends attendance reports.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cfg-sender-password">Sender Password / App Password</label>
+                                <input type="password" id="cfg-sender-password" placeholder="Leave blank to keep current">
+                                <small>For Gmail accounts with 2FA, generate an <strong>App Password</strong> in Google Account &gt; Security &gt; App Passwords.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cfg-faculty-email">Faculty / Receiver Email</label>
+                                <input type="email" id="cfg-faculty-email" required placeholder="e.g. faculty@university.edu">
+                                <small>The primary email that receives daily CSV attendance reports.</small>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col">
+                                    <label for="cfg-smtp-server">SMTP Server</label>
+                                    <input type="text" id="cfg-smtp-server" value="smtp.gmail.com">
+                                </div>
+                                <div class="form-group col">
+                                    <label for="cfg-smtp-port">SMTP Port</label>
+                                    <input type="number" id="cfg-smtp-port" value="587">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cfg-threshold">Cosine Distance Threshold (Recognition Strictness)</label>
+                                <div class="range-wrap">
+                                    <input type="range" id="cfg-threshold" min="0.25" max="0.65" step="0.01" value="0.40">
+                                    <span class="range-val" id="cfg-threshold-val">0.40</span>
+                                </div>
+                                <small>Lower is stricter (less false positives, e.g. 0.35-0.40). Default: 0.40</small>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="btn-save-settings">Save Settings</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Test & Diagnostics Card -->
+                    <div class="pane-card glass">
+                        <div class="card-header">
+                            <h3>Test & Manual Actions</h3>
+                        </div>
+                        
+                        <div class="action-block">
+                            <h4>Send Test Verification Email</h4>
+                            <p>Verify that your SMTP credentials, TLS handshake, and authentication are functioning without errors.</p>
+                            <div class="input-btn-group">
+                                <input type="email" id="test-email-recipient" placeholder="Recipient email address...">
+                                <button class="btn btn-outline" id="btn-send-test-email">Send Test</button>
+                            </div>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="action-block">
+                            <h4>Send Today's Attendance Report Now</h4>
+                            <p>Emails the CSV attendance log of all present students today directly to the configured Faculty email address.</p>
+                            <button class="btn btn-success" id="btn-trigger-email-report">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                <span>Send Daily Report to Faculty</span>
+                            </button>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="action-block">
+                            <h4>Database Retention Policy (24 Hours)</h4>
+                            <p>Previous attendance check-ins older than 24 hours are automatically purged to guarantee clean daily rosters, while keeping registered students and facial embeddings intact.</p>
+                            <button class="btn btn-outline" id="btn-settings-purge">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                <span>Purge Records Older Than 24h Now</span>
+                            </button>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="action-block">
+                            <h4>InsightFace Model Engine</h4>
+                            <div class="info-list">
+                                <div class="info-item"><span>Engine Model:</span> <strong>Buffalo_L (det_10g + w600k_r50)</strong></div>
+                                <div class="info-item"><span>Execution Provider:</span> <strong>CPUExecutionProvider</strong></div>
+                                <div class="info-item"><span>Det Size:</span> <strong>160 x 160 px</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: SQL EXPLORER -->
+            <div class="tab-pane" id="tab-sql">
+                <div class="pane-card glass">
+                    <div class="card-header">
+                        <h3>Interactive SQLite Database Console</h3>
+                        <div class="preset-queries">
+                            <span>Presets:</span>
+                            <button class="chip" data-query="SELECT * FROM students;">Students</button>
+                            <button class="chip" data-query="SELECT * FROM attendance ORDER BY date DESC, time_in DESC LIMIT 20;">Recent Attendance</button>
+                            <button class="chip" data-query="SELECT date, count(*) as count FROM attendance GROUP BY date ORDER BY date DESC;">Daily Totals</button>
+                        </div>
+                    </div>
+
+                    <div class="sql-editor-container">
+                        <textarea id="sql-query-input" placeholder="Enter SQL query (e.g. SELECT * FROM attendance WHERE date = date('now');)"></textarea>
+                        <div class="sql-actions">
+                            <span class="sql-hint">Supports SELECT, INSERT, UPDATE, DELETE queries on attendance.db</span>
+                            <button class="btn btn-primary" id="btn-run-sql">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                <span>Execute SQL</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="sql-result-container" id="sql-result-container">
+                        <div class="empty-state-small">Execute a query above to see tabular results here.</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: REGISTER STUDENT -->
+    <dialog class="modal-dialog" id="register-modal">
+        <div class="modal-card glass">
+            <div class="modal-header">
+                <h3>Register New Student</h3>
+                <button class="btn-close" id="btn-close-register">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="register-student-form">
+                    <div class="form-group">
+                        <label for="reg-student-name">Student Full Name / ID (no spaces)</label>
+                        <input type="text" id="reg-student-name" required pattern="[A-Za-z0-9_-]+" placeholder="e.g. john_doe or 2026CS01">
+                        <small>Use alphanumeric characters or underscores.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-student-email">Student Email Address</label>
+                        <input type="email" id="reg-student-email" required placeholder="e.g. john@student.edu">
+                    </div>
+
+                    <div class="registration-mode-toggle">
+                        <label>Face Capture Method:</label>
+                        <div class="radio-pill-group">
+                            <label class="radio-pill active"><input type="radio" name="reg-mode" value="cam" checked> Live Webcam Capture</label>
+                            <label class="radio-pill"><input type="radio" name="reg-mode" value="upload"> File Upload</label>
+                        </div>
+                    </div>
+
+                    <!-- Webcam Multi-Capture Section -->
+                    <div class="reg-capture-section" id="reg-cam-section">
+                        <div class="reg-camera-box">
+                            <video id="reg-webcam-video" autoplay playsinline muted></video>
+                            <canvas id="reg-snapshot-canvas" style="display:none;"></canvas>
+                            <div class="reg-capture-overlay">
+                                <div class="face-guide-oval"></div>
+                            </div>
+                        </div>
+                        <div class="reg-camera-controls">
+                            <button type="button" class="btn btn-accent" id="btn-snap-photo">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                <span>Capture Photo (<span id="snap-count">0</span>/3)</span>
+                            </button>
+                            <button type="button" class="btn btn-outline" id="btn-clear-snaps">Reset Photos</button>
+                        </div>
+                        <div class="snap-thumbnails-strip" id="snap-thumbnails"></div>
+                        <small class="text-muted">Take 3 clear photos from slightly different angles for highest accuracy.</small>
+                    </div>
+
+                    <!-- File Upload Section -->
+                    <div class="reg-upload-section" id="reg-upload-section" style="display:none;">
+                        <div class="dropzone" id="file-dropzone">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <p>Drag & drop 1-5 face photos here, or click to browse</p>
+                            <input type="file" id="reg-file-input" multiple accept="image/jpeg,image/png,image/webp" style="display:none;">
+                        </div>
+                        <div class="snap-thumbnails-strip" id="upload-thumbnails"></div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" id="btn-cancel-register">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-register">Register & Compute Embeddings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- MODAL: MANUAL ATTENDANCE -->
+    <dialog class="modal-dialog" id="manual-modal">
+        <div class="modal-card glass">
+            <div class="modal-header">
+                <h3>Manual Attendance Entry</h3>
+                <button class="btn-close" id="btn-close-manual">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="manual-attendance-form">
+                    <div class="form-group">
+                        <label for="manual-student-select">Select Student</label>
+                        <select id="manual-student-select" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="manual-date">Date</label>
+                        <input type="date" id="manual-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="manual-time">Check-in Time</label>
+                        <input type="time" step="1" id="manual-time" required>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" id="btn-cancel-manual">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Log Attendance</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
