@@ -1,116 +1,91 @@
-# Face Recognition Attendance — Project Guide
+# Face Attendance Project Guide
 
-## What this project does
+## 1. What the project does
 
-This project is a digital attendance register. A student looks at a camera, the software checks whether their face matches a previously registered student, and it records one attendance entry for that student on that date.
+- Keeps an electronic attendance register.
+- An administrator registers students and their face photos.
+- A faculty member signs in and opens the classroom camera kiosk.
+- The system checks a student's face against registered students and records a match.
+- Students do not need an account. They only stand in front of the faculty camera.
 
-In simple terms: the camera collects a picture, the face model acts like an identity checker, and the database acts like the attendance book.
+## 2. Who can do what
 
-## A short explanation you can present
+- **Admin:** registers students; views and exports attendance; manages settings and email reports.
+- **Faculty:** signs in and uses the attendance kiosk only.
+- **Student:** does not sign in and cannot edit records; the student is recognized at the kiosk.
+- The server enforces these role limits, even if someone tries to open an admin address directly.
 
-> “An administrator registers students and their face photos. When a faculty member signs in and opens the attendance kiosk, students can stand in front of its camera. The system compares each face with registered students and records attendance for a match. Faculty can use the kiosk; administrators manage student details and attendance records.”
+## 3. How attendance is recorded
 
-The mathematical signature is often called a **face embedding**. It is a list of numbers that represents face features; it is not a person’s name and it is not a percentage-guarantee of identity.
+1. Faculty opens the site and signs in.
+2. Faculty allows the browser to use the camera.
+3. The browser sends camera frames to the app server over HTTPS.
+4. The face model looks for a face and makes a numerical face signature.
+5. The system compares that signature with the signatures stored for registered students.
+6. When the closest match passes the configured threshold, the system records attendance.
+7. Faculty sees the result. Admin can review the attendance list or download it as a CSV file.
 
-## How one attendance check works
+## 4. Login and logout
 
-1. A faculty member opens the web dashboard and signs in with faculty credentials.
-2. The faculty member opens the attendance kiosk; the browser asks permission to use the device camera.
-3. The browser sends camera frames to the application server.
-4. The server’s face-recognition model finds a face and makes its mathematical signature.
-5. The server compares that signature with the registered students’ signatures.
-6. If the closest match passes the configured similarity threshold, the server records attendance.
-7. The dashboard shows the result; staff can review the attendance list or download a CSV file.
+- Open the [login page](https://minor-project-attendance.onrender.com/login).
+- Enter the Admin or Faculty username and password provided by the project owner.
+- A successful sign-in creates a secure, signed session that lasts up to eight hours.
+- Choose **Log out** in the dashboard to end the session.
+- Keep passwords private. Never put real passwords in this public repository.
 
-The app checks repeatedly while the faculty kiosk camera is on. It prevents a second automatic attendance entry for the same student on the same date. Students do not have accounts or access to the dashboard. Only an administrator can register students, edit records, configure email, export attendance, or use the database console.
+## 5. Simple architecture
 
-## Architecture at a glance
+- **Browser:** shows the pages and asks for camera permission.
+- **App server:** checks the account role, receives camera frames, and coordinates the work.
+- **Face model:** detects and compares faces on the server.
+- **Database:** keeps student and attendance records.
+- **Files:** keep registered face photos, numerical face signatures, and settings.
+- **Optional email service:** can send reports after an admin configures email settings.
 
-```mermaid
-flowchart LR
-    P[Student in front of camera] --> B[Web browser and dashboard]
-    B -->|camera frames and requests| S[FastAPI application server]
-    S --> M[Face detection and matching model]
-    M -->|best match| S
-    S --> D[(SQLite attendance database)]
-    S --> E[Saved face photos and face signatures]
-    S --> B
-    B -->|view lists / download CSV| Staff[Staff member]
-    S -. optional configured email .-> Mail[SMTP email service]
-```
+In one line: **Camera → Browser → App server → Face model → Attendance database → Dashboard**.
 
-### The main parts
+## 6. The face model on the live demo
 
-- **Dashboard (the front desk):** Faculty use the attendance kiosk. Administrators see the additional student, attendance, settings, and report tools.
-- **Application server (the coordinator):** Receives browser requests, checks sign-in, asks the recognition model to process faces, and reads or writes records.
-- **Recognition model (the checker):** Detects faces and compares their signatures. The current web app uses InsightFace with ONNX Runtime and runs on the CPU.
-- **Database and files (the filing cabinet):** SQLite holds student and attendance records. Other files hold registered face photos, saved signatures, and settings.
-- **Optional email service:** If SMTP details are configured, the app can send email reports. Email is an add-on, not required for attendance.
+- The live Render demo uses the InsightFace `buffalo_sc` face detection and recognition pack.
+- The smaller pack is about 16 MB and successfully loaded on the free service.
+- The app uses CPU processing; the browser provides the camera, while the server runs recognition.
+- The model can make mistakes. Lighting, camera quality, pose, and registration photos affect results.
+- The project does not check that a live person is present; a photo or screen may fool it.
+- InsightFace's pretrained model packs are limited to non-commercial research use. Check the license before any other use.
 
-## Registering a student
+## 7. Project file pointers
 
-An administrator registers a student with their name, email, and face photo. The server saves the student details, stores the photo under `known_faces/`, and adds the face signature to `encodings.json`. Later kiosk checks compare against these saved signatures.
+- [`web_app.py`](web_app.py) — main server; login sessions, role checks, model startup, API routes, attendance, exports, and email.
+- [`static/login.html`](static/login.html) — sign-in page for Admin and Faculty.
+- [`static/index.html`](static/index.html) — dashboard page structure.
+- [`static/app.js`](static/app.js) — browser actions, camera frames, recognition loop, and dashboard updates.
+- [`static/style.css`](static/style.css) — dashboard layout, colors, and faculty view styling.
+- [`attendance_system.py`](attendance_system.py) — earlier command-line version; the website uses `web_app.py`.
+- [`run_web.py`](run_web.py) — starts the web app for local use.
+- [`run_online.py`](run_online.py) — starts a temporary public tunnel for a short demo.
+- [`requirements.txt`](requirements.txt) — Python packages needed by the app.
+- [`Dockerfile`](Dockerfile) — instructions to package the app for a container host.
+- [`docker-compose.yml`](docker-compose.yml) — runs the container locally and keeps local data in a named volume.
+- [`docker-entrypoint.sh`](docker-entrypoint.sh) — prepares the data folder when the container starts.
+- [`render.yaml`](render.yaml) — Render service configuration, including the lightweight model setting.
+- [`README.md`](README.md) — short overview and local setup steps.
+- [`DEPLOYMENT.md`](DEPLOYMENT.md) — hosting notes and limitations.
+- [`QUICK_TUNNEL.md`](QUICK_TUNNEL.md) — temporary tunnel instructions; the computer must stay on.
+- [`REPORT_REVIEW.md`](REPORT_REVIEW.md) — notes on the original report and implementation differences.
+- [`output/pdf/PROJECT_GUIDE.pdf`](output/pdf/PROJECT_GUIDE.pdf) — this guide in PDF form.
+- `.env.example` — names of settings to configure locally; it contains placeholders, not real credentials.
 
-## What information is stored
+## 8. Live link and important free-plan limits
 
-The app’s data folder can contain:
+- Website: [minor-project-attendance.onrender.com](https://minor-project-attendance.onrender.com)
+- Sign in: [minor-project-attendance.onrender.com/login](https://minor-project-attendance.onrender.com/login)
+- Source code: [github.com/tiwari-shresth/Minor-Project](https://github.com/tiwari-shresth/Minor-Project)
+- The Render free service has limited memory and temporary storage.
+- Free-service attendance data, photos, and face signatures may disappear after a restart or redeploy.
+- It can sleep when unused, so opening it may take a little time.
+- Use sample data for a demo. Do not depend on this free service for official attendance or real biometric records.
+- For real use, arrange persistent protected storage, backups, a retention and deletion policy, suitable consent, and an attendance alternative.
 
-- `attendance.db` — student details and attendance entries.
-- `known_faces/` — registered face photos.
-- `encodings.json` — saved face signatures used for matching.
-- `config.json` — app and optional mail settings.
+## 9. Short explanation to present
 
-These files can identify people or contain biometric data. Keep the data folder private, restrict access, decide how long records are needed, and provide a non-face/manual attendance option where appropriate. The web app does not automatically delete old records on a schedule. The older command-line version has separate cleanup behavior; do not assume it applies to the web app.
-
-## Important limits to explain honestly
-
-- A match threshold is a tuning setting, not proof that recognition is always correct.
-- The displayed match confidence is a similarity indicator, not a calibrated probability that the identity is correct.
-- The project has no liveness check to determine whether a real person is in front of the camera rather than a photo or screen.
-- Camera quality, lighting, pose, and the registered photos can affect matching.
-- The project should be treated as a minor project/demo until it has been evaluated with representative users and safeguards. A manual attendance fallback is sensible.
-- Face data is sensitive. Get appropriate consent, explain its use, secure access, and define deletion and retention practices before real-world use.
-
-## Hosting and what “online” means here
-
-There are two different deployment configurations in this project:
-
-- **Temporary demo tunnel:** `run_online.py` can expose the running application on the developer’s computer through a temporary Cloudflare Quick Tunnel URL. That computer and its app/tunnel process must stay online. The URL can change after a restart. This is useful for a short demo, but it is not a permanently hosted service.
-- **Render free demo configuration:** `render.yaml` describes a limited free service and disables face recognition because the free instance may not have enough memory for the model. Data on a free instance may not persist reliably. It is therefore not equivalent to a fully operational, durable attendance service.
-- **Local/Docker setup:** `docker-compose.yml` is for running the app in Docker with a named data volume. It is useful for a controlled local setup; a volume on one machine is not automatically a cloud backup.
-
-The address being reachable on another person’s device only means they can open the web page. For a reliable service, the server must remain running, use HTTPS, have enough memory for the recognition model, and use persistent protected storage with backups. Do not put passwords, app keys, face data, or student records in a public code repository.
-
-## Repository file pointers
-
-| File | What it is for |
-|---|---|
-| [`web_app.py`](web_app.py) | Main web server: authentication, model startup, API actions, matching, attendance, exports, optional mail, and static page delivery. |
-| [`static/index.html`](static/index.html) | Structure and labels of the dashboard shown in the browser. |
-| [`static/style.css`](static/style.css) | Dashboard appearance and layout. |
-| [`static/app.js`](static/app.js) | Browser behavior: camera access, registration, sending frames to the server, and updating dashboard views. |
-| [`attendance_system.py`](attendance_system.py) | Earlier command-line/local-camera version of the project. Useful for understanding the original workflow; it is not the web dashboard entry point. |
-| [`run_web.py`](run_web.py) | Starts the web app locally for development or local use. |
-| [`run_online.py`](run_online.py) | Starts the app and a temporary public tunnel for a demo. |
-| [`requirements.txt`](requirements.txt) | Python libraries required by the project. |
-| [`Dockerfile`](Dockerfile) | Instructions to package the app into a Docker container. |
-| [`docker-compose.yml`](docker-compose.yml) | Runs the container locally and connects a named data volume. |
-| [`docker-entrypoint.sh`](docker-entrypoint.sh) | Prepares the container’s data folder and starts the app with the configured user. |
-| [`render.yaml`](render.yaml) | Render service settings for the limited free demo deployment. |
-| [`README.md`](README.md) | Project overview and general setup instructions. |
-| [`DEPLOYMENT.md`](DEPLOYMENT.md) | Deployment options and setup notes. |
-| [`QUICK_TUNNEL.md`](QUICK_TUNNEL.md) | Notes for using the temporary Cloudflare tunnel demo. |
-| [`REPORT_REVIEW.md`](REPORT_REVIEW.md) | Review notes about the project report and differences/limits in the implementation. |
-
-## A simple analogy
-
-Think of it as a school reception desk:
-
-- The **web page** is the desk where the staff member operates the system.
-- The **camera** is the sign-in point.
-- The **recognition model** is the staff member checking a face against registered records.
-- The **database** is the attendance book.
-- The **CSV export** is a copy of the register that can be opened in a spreadsheet.
-- The **server** is the office behind the desk that coordinates each step.
-
-The analogy is only for explaining the flow; the model can make mistakes and should not be treated as a human-level identity check.
+“The admin registers students first. When faculty starts a class, they sign in and open the camera kiosk. The system compares each student's face with the registered list and records a match in the attendance register. Students do not need accounts, and only the admin can manage records.”

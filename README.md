@@ -1,31 +1,36 @@
-# Face Recognition Attendance System
+# Face Recognition Attendance
 
-For a no-cost public demo from your own computer, follow [QUICK_TUNNEL.md](QUICK_TUNNEL.md). It uses a temporary Cloudflare HTTPS tunnel; your computer must stay awake and online.
+- **Live site:** [Open the attendance app](https://minor-project-attendance.onrender.com)
+- **Login page:** [Sign in](https://minor-project-attendance.onrender.com/login)
+- **Public code:** [GitHub repository](https://github.com/tiwari-shresth/Minor-Project)
 
-A FastAPI web dashboard for webcam-based student registration, face recognition, attendance records, and CSV reporting. The user's browser supplies the webcam; the server runs InsightFace inference and stores student data.
+## In simple words
 
-## Deploy with Docker Compose
+- Admin registers students and manages attendance.
+- Faculty signs in and opens the camera kiosk.
+- Students do not sign in; they stand in front of the camera to mark attendance.
+- The app compares faces and records a match in its attendance register.
+- Admin and Faculty use separate credentials and receive different access.
 
-1. Install Docker on a host that supports persistent volumes and has at least 2 GB RAM. The first build downloads Python packages and the first run downloads the InsightFace model.
-2. Copy `.env.example` to `.env` and set unique admin and faculty usernames and long random passwords. Keep `.env` private. The example enables local face recognition; the Render free demo disables the model to stay within its memory limit.
-3. Run `docker compose up -d --build`.
-4. Put the service behind a domain with HTTPS before using the browser camera. Admins can manage the system; faculty sign in with their separate credentials and receive access to the attendance kiosk only. Students do not need accounts; they are marked by the camera during a faculty attendance session.
-5. Configure SMTP inside the authenticated Settings page if email reports are needed. Use a new provider app password; never reuse a password that was included in the source project.
+## Quick file guide
 
-The `attendance-data` Docker volume preserves SQLite attendance records, embeddings, student photos, and app configuration across container replacements. Back it up securely. Attendance history is no longer automatically deleted; use the authenticated purge action only when the retention policy calls for it. In the Render free preview, face recognition is disabled to fit the memory limit; local data is also ephemeral. See `DEPLOYMENT.md` before using that demo.
+- `web_app.py` — app server, roles, face model, and attendance actions.
+- `static/login.html` — sign-in page.
+- `static/index.html`, `static/app.js`, `static/style.css` — dashboard page and its behavior/design.
+- `attendance_system.py` — earlier command-line version.
+- `render.yaml`, `Dockerfile`, `docker-compose.yml` — hosting and container setup.
+- `PROJECT_GUIDE.md` — full project explanation in simple pointers.
+- `output/pdf/PROJECT_GUIDE.pdf` — printable version of that guide.
+- `DEPLOYMENT.md` — hosting notes and known limits.
 
-## Security and privacy
+## Run locally
 
-The `/login` page signs in Admin and Faculty accounts using `ADMIN_USERNAME`/`ADMIN_PASSWORD` and `FACULTY_USERNAME`/`FACULTY_PASSWORD`. Sessions use an HTTP-only signed cookie and expire after eight hours; the dashboard has a Log out button. Set `SESSION_SECRET` to a long random value in hosted environments. Faculty accounts can only use the attendance kiosk; the server rejects access to student management, attendance history, exports, settings, and SQL tools. Keep credentials private and use HTTPS. Face photos and embeddings are sensitive biometric data: register people only with appropriate notice/consent, restrict access, define retention and deletion procedures, and protect backups.
+1. Install Python and create a virtual environment.
+2. Install packages: `pip install -r requirements.txt`.
+3. Copy `.env.example` to `.env` and set private Admin and Faculty credentials plus a random `SESSION_SECRET`.
+4. Start the app: `uvicorn web_app:app --host 127.0.0.1 --port 8000`.
+5. Open `http://127.0.0.1:8000/login`.
 
-The system does not perform liveness checks and has not been validated for demographic accuracy or classroom conditions. It should be treated as a demonstration project until those risks are evaluated.
+The live Render demo uses the small InsightFace `buffalo_sc` model. It is enabled and was confirmed loaded at startup. The free service has temporary storage, so data can disappear after a restart. Use sample records only; do not use the free demo for official attendance or real biometric data. InsightFace model packs are licensed for non-commercial research use.
 
-## Local development
-
-Create a Python environment, install `requirements.txt`, set the admin and faculty credentials (`ADMIN_USERNAME`, `ADMIN_PASSWORD`, `FACULTY_USERNAME`, and `FACULTY_PASSWORD`) plus `SESSION_SECRET`; set `ENABLE_FACE_RECOGNITION=true` to load the model, then run:
-
-```sh
-uvicorn web_app:app --host 127.0.0.1 --port 8000
-```
-
-Open `http://127.0.0.1:8000`. Browsers permit camera access on localhost; remote access requires HTTPS.
+For the workflow, architecture, file list, privacy notes, and presentation summary, read [PROJECT_GUIDE.md](PROJECT_GUIDE.md) or [PROJECT_GUIDE.pdf](output/pdf/PROJECT_GUIDE.pdf).
